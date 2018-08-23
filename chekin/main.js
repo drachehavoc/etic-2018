@@ -1,3 +1,4 @@
+const baseUrl = "http://www.etic.ifc-camboriu.edu.br/etic-2018/server/apiRequests.php"
 const domQrcodeInput = document.querySelector('.qrcode input')
 const domInscritos = document.querySelector('.inscritos')
 const domVideo = document.querySelector('video')
@@ -8,6 +9,7 @@ const args = document.location.search.substr(1).split(':')
 const event = args[0]
 const camNo = args[1] || 0
 const justInfo = !!args[2] || false
+const joined = []
 
 const init = () => {
     if (!event && !justInfo) return alert("!!!")
@@ -42,7 +44,8 @@ const loadEventData = async evento => {
         return
     }
 
-    let req = await fetch(`api/evento.php?id=${evento}`)
+    // let req = await fetch(`api/evento.php?id=${evento}`)
+    let req = await fetch(`${baseUrl}?option=carregarAtividadeUnica&id=${evento}`)
     let res = await req.json()
     document.querySelector('.title').innerText = res.nome
 }
@@ -73,7 +76,7 @@ const rollDice = async (id, name) => {
         const doTheMagic = () => {
             if (!animating) return
             animationCurrent = --animationCurrent || startAt
-            domEticoins.innerText = animationCurrent
+            domEticoins.innerText = animationCurrent+"/"+animationCurrent
             window.requestAnimationFrame(doTheMagic)
         }
         doTheMagic()
@@ -112,9 +115,12 @@ const msg = (type, msg) => {
     }, 300)
 }
 
-const save = id => {
-    if (justInfo) return
+const localStock = id => {
+    if (justInfo) 
+        return
     
+    if ( !joined.includes(id) )
+        joined.push(id)
 }
 
 const saveTrigger = id => {
@@ -122,7 +128,7 @@ const saveTrigger = id => {
     let target = document.querySelector(`[data-id="${id}"]`)
     if (!target) return msg('error', `Você não esta cadastrado neste evento!`)
     let name = target.innerText
-    save(id)
+    localStock(id)
     rollDice(id, name)
     msg('ok', `Olá, ${name}!`)
     domInscritos.scrollTop = target.offsetTop - domInscritos.offsetTop - (domInscritos.offsetHeight / 2)
