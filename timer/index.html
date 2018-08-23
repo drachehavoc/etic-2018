@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<title>etic - countdown</title>
+
+	<link href="https://fonts.googleapis.com/css?family=Ubuntu" rel="stylesheet">
+
+	<style type="text/css">
+		@keyframes mommyItsOver {
+			0% {
+				transform: translateX(-50%) translateY(-50%) scale(.9);
+			}
+
+			50% {
+				transform: translateX(-50%) translateY(-50%) scale(1);
+			}
+
+			100% {
+				transform: translateX(-50%) translateY(-50%) scale(.9);
+			}
+		}
+
+		body,
+		html {
+			margin: 0;
+			color: #FFFFFF;
+			font-family: Ubuntu
+		}
+
+		body {
+			display: flex;
+			height: 100vh;
+			justify-content: center;
+			align-items: center;
+			flex-direction: column;
+		}
+
+		div.timer-title {
+			color: black;
+			font-size: 5vw
+		}
+
+		div.timer-container {
+			display: flex;
+			font-size: 3vw;
+			height: 50vh;
+			transition: 2s 1s;
+		}
+
+		.finished div.timer-container {
+			height: 20vh;
+			font-size: 2vw;
+			transform: translateY(-45vh);
+		}
+
+		div.timer-container>div {
+			position: relative;
+			background: #27ae60;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			width: 20vw;
+			height: 20vw;
+			height: 70%;
+			border-radius: 10px;
+			margin: 2%;
+			box-sizing: border-box;
+		}
+
+		div.timer-container>div:before {
+			width: 100%;
+			position: absolute;
+			bottom: 5%;
+			text-align: center;
+			font-size: 70%;
+			opacity: .5
+		}
+
+		div.percent {
+			background: #e74c3c;
+			height: 10px;
+			border-radius: 20px;
+			width: 100%
+		}
+
+		div.end {
+			font-size: 4vw;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			width: 60vw;
+			height: 30vw;
+			background: #e74c3c;
+			z-index: 10;
+			transform: translateX(-50%) translateY(-50%);
+			opacity: 0;
+			visibility: hidden;
+			transition: 1s;
+			border-radius: 2vw;
+		}
+
+		.finished div.end {
+			opacity: 1;
+			visibility: visible;
+			animation: mommyItsOver 1s infinite
+		}
+
+		div.timer-container>div.blink {
+			background: red
+		}
+
+		div.timer-container>div:nth-child(1):before {
+			content: "dias"
+		}
+
+		div.timer-container>div:nth-child(2):before {
+			content: "horas"
+		}
+
+		div.timer-container>div:nth-child(3):before {
+			content: "minutos"
+		}
+
+		div.timer-container>div:nth-child(4):before {
+			content: "segundos"
+		}
+	</style>
+</head>
+
+<body>
+
+	<div class="end"></div>
+	<div class="timer-title"></div>
+	<div class="timer-container"></div>
+	<div class="percent"></div>
+
+	<script type="text/javascript">
+		let total = 0
+		let finished = false
+
+		const container = document.querySelector('div.timer-container')
+		const title = document.querySelector('div.timer-title')
+		const percent = document.querySelector('div.percent')
+		const domEnd = document.querySelector('div.end')
+
+		const diff = (da, db) => {
+			let ms = (db - da)
+			let s = parseInt(ms / 1000)
+			let i = parseInt(s / 60)
+			let h = parseInt(i / 60)
+			let d = parseInt(h / 24)
+
+			return {
+				real: ms,
+				ms: ms % 1000,
+				s: s % 60,
+				i: i % 60,
+				h: h % 24,
+				d,
+				p: ms < 0 ? 0 : (ms / total) * 100
+			}
+		}
+
+		const crtDiv = (holder, className) => {
+			let div = document.createElement('div')
+			div.className = className
+			holder.appendChild(div)
+			return div
+		}
+
+		const showData = (dom, diff) => {
+			percent.style.width = diff.p + "%"
+			Object.keys(dom).forEach(k => dom[k].innerText = diff[k])
+		}
+
+		const dom = {
+			d: crtDiv(container, 'days'),
+			h: crtDiv(container, 'hours'),
+			i: crtDiv(container, 'minutes'),
+			s: crtDiv(container, 'seconds'),
+			ms: crtDiv(container, 'milliseconds'),
+		}
+
+		const init = async cntx => {
+			if (!window.location.search)
+				return
+				
+			const reqSync = await fetch('sync.php')
+			const reqConf = await fetch(`timer/${window.location.search.substr(1)}`)
+			const sync = await reqSync.json()
+			const conf = await reqConf.json()
+			const dateTimeSnc = new Date(sync.y, sync.m, sync.d, sync.h, sync.i, sync.s)
+			const dateTimeElipsed = new Date(conf.y, conf.m, conf.d, conf.h, conf.i, conf.s)
+
+			title.innerText = conf.title
+			domEnd.innerText = conf['msg-fim']
+			total = dateTimeElipsed - dateTimeSnc
+
+			let after
+			let before = performance.now()
+			let elipsed
+			let left
+
+			const update = () => {
+				after = performance.now()
+				elipsed = after - before
+				before = after
+
+				dateTimeElipsed.setMilliseconds(dateTimeElipsed.getMilliseconds() - elipsed)
+				left = diff(dateTimeSnc, dateTimeElipsed)
+
+				showData(dom, left)
+				window.requestAnimationFrame(update)
+			}
+
+			setInterval(() => {
+				if (left.p <= 0 && !finished) {
+					finished = true
+					document.body.classList.add("finished")
+				}
+			}, 1000)
+
+			update()
+		}
+
+		init()
+	</script>
+</body>
+
+</html>

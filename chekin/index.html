@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<title></title>
+	<link href="https://fonts.googleapis.com/css?family=Ubuntu" rel="stylesheet">
+	<style type="text/css">
+		@keyframes show {
+			0% {
+				transform: scale(1);
+			}
+
+			50% {
+				transform: scale(1.03);
+			}
+		}
+
+		@keyframes msgOk {
+			0% {
+				opacity: 0;
+				visibility: hidden;
+				transform: translateY(5vh);
+			}
+
+			10% {
+				opacity: 1;
+				visibility: visible;
+				transform: translateY(0vh);
+			}
+
+			100% {
+				opacity: 0;
+				visibility: hidden;
+				transform: translateY(-5vh);	
+			}
+		}
+
+		@keyframes msgError {
+			0% {
+				opacity: 0;
+				visibility: hidden
+			}
+
+
+			10%, 90% {
+				opacity: 1;
+				visibility: visible
+			}
+
+			100% {
+				opacity: 0;
+				visibility: hidden
+			}
+		}
+
+		body,
+		html {
+			margin: 0;
+			padding: 0;
+			border: 0 none;
+			overflow: hidden;
+			font-family: 'Ubuntu', sans-serif;
+		}
+
+		* {
+			box-sizing: border-box;
+			outline: none;
+		}
+
+		body {
+			display: flex;
+			flex-wrap: wrap;
+			--quadrado-qrcode: 35vw;
+		}
+
+		.title {
+			background: rgba(0, 0, 0, .1);
+			flex: none;
+			width: 100%;
+			height: 20vh;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			font-size: 5vw
+		}
+
+		main {
+			display: flex;
+		}
+
+		main .inscritos {
+			height: 80vh;
+			width: 60vw;
+			overflow-y: auto;
+			overflow-x: hidden;
+		}
+
+		main .inscritos>div {
+			padding: 1vw;
+			font-size: 2vw;
+			color: #777777;
+			display: flex;
+			align-items: center;
+			overflow: hidden;
+			opacity: .7
+		}
+
+		main .inscritos>div:nth-child(odd) {
+			background: rgba(0, 0, 0, .05)
+		}
+
+		main .inscritos>div.selected {
+			opacity: 1;
+			animation: show 1s 1s;
+			animation-iteration-count: 3;
+		}
+
+		main .inscritos>div:before {
+			content: " ";
+			display: inline-block;
+			height: 1vw;
+			width: 1vw;
+			margin-right: 1vw;
+			background: #e74c3c;
+			border-radius: 50%
+		}
+
+		main .inscritos>div.selected:before {
+			background: #27ae60
+		}
+
+		main .qrcode {
+			display: flex;
+			background: #333;
+			flex-direction: column;
+			width: 40vw;
+			height: 100%;
+			justify-content: flex-start;
+			align-items: center;
+			padding: 1vw
+		}
+
+		main .qrcode video {
+			background: white;
+			flex: none;
+			width: 100%
+		}
+
+		main .qrcode input {
+			display: flex;
+			font-size: 3vh;
+			flex: none;
+			text-align: center;
+			border: 0 none;
+			width: 100%;
+			height: 7vh;
+		}
+
+		main .qrcode .eticoins {
+			color: #FFFFFF;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			justify-content: center;
+			height: 100%
+		}
+
+		main .qrcode .eticoins .points {
+			font-size: 15vh
+		}
+
+		.msgs {
+			position: absolute;
+			top: 40vh;
+			bottom: 40vh;
+			left: 10vw;
+			right: 10vw;
+			background: transparent;
+			z-index: 99;
+			border-radius: 20px;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			/* transition: 1s; */
+			font-size: 4vw;
+			opacity: 0;
+			visibility: hidden;
+			color: #FFFFFF
+		}
+
+		.msgs.show[data-type="ok"] {
+			background: #27ae60;
+			animation: msgOk 5s
+		}
+
+		.msgs.show[data-type="error"] {
+			background: #e74c3c;
+			opacity: 1;
+			visibility: visible;
+			transform: translateY(0vh);
+			animation: msgError 5s
+		}
+	</style>
+	<script defer src="instascan.min.js"></script>
+	<script defer src="main.js"></script>
+</head>
+
+<body>
+	<div class="msgs">mensagem</div>
+	<div class="title">...</div>
+	<main>
+		<div class="qrcode">
+			<video></video>
+			<input>
+			<div class="eticoins">
+				<div class="points">---</div>
+				<div class="nome">...</div>
+			</div>
+		</div>
+		<div class="inscritos"></div>
+	</main>
+</body>
+
+</html>

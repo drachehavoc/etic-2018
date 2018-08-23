@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <script defer src="qr/qrcodejs/qrcode.min.js"></script>
+    <style>
+        html,
+        body {
+            padding: 0;
+            margin: 0;
+            height: 100vh;
+            width: 100vw
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: black;
+            flex-direction: column
+        }
+
+        #qrcode {
+            width: 100%;
+            background: #888;
+            box-sizing: border-box;
+            padding: 5vmax
+        }
+
+        #qrcode * {
+            width: 100%;
+        }
+
+        #info {
+            color: #FFFFFF
+        }
+    </style>
+</head>
+
+<body>
+    <div id="qrcode"></div>
+    <div id="info">---</div>
+    <script>
+        let domQr = document.getElementById("qrcode")
+        let domInfo = document.getElementById("info")
+
+        document.body.addEventListener('click', gerar)
+
+        function randomIntFromInterval(min, max) {
+            return Math.floor(Math.random() * (max - min + 1) + min);
+        }
+
+        function gerar() {
+            let num = randomIntFromInterval(3301, 3399)
+            domQr.innerHTML = ""
+            domInfo.innerHTML = num
+            var qrcode = new QRCode(domQr, {
+                text: num.toString(),
+                width: 800,
+                height: 800,
+                colorDark: "#000000",
+                colorLight: "#888888",
+                correctLevel: QRCode.CorrectLevel.L
+            });
+        }
+    </script>
+</body>
+
+</html>
