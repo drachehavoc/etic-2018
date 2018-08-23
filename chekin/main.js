@@ -1,4 +1,13 @@
+const updateAtTime = 2
 const baseUrl = "http://www.etic.ifc-camboriu.edu.br/etic-2018/server/apiRequests.php"
+
+// ----------------------------------------------------------------------------
+
+let updateTimeLeft = updateAtTime
+let saving = false
+
+const domBubbleTimeLeft = document.querySelector('.time-left')
+const domBubbleInsc = document.querySelector('.insc')
 const domQrcodeInput = document.querySelector('.qrcode input')
 const domInscritos = document.querySelector('.inscritos')
 const domVideo = document.querySelector('video')
@@ -9,7 +18,7 @@ const args = document.location.search.substr(1).split(':')
 const event = args[0]
 const camNo = args[1] || 0
 const justInfo = !!args[2] || false
-const joined = []
+const joined = JSON.parse(localStorage.getItem('joined')) || []
 
 const init = () => {
     if (!event && !justInfo) return alert("!!!")
@@ -17,6 +26,19 @@ const init = () => {
     attachEvents()
     loadEventData(event)
     loadEnrolledData(event)
+    setInterval(tickTimeLeft, 1000)
+}
+
+const save = () => {
+    saving = true
+}
+
+const showLocalStored = () => {
+    domBubbleInsc.innerText = joined.length
+    joined.forEach(id => {
+        let el = document.querySelector(`[data-id="${id.toString()}"]`)
+        if (el) el.classList.add('selected')
+    })
 }
 
 const scanner = async () => {
@@ -53,13 +75,19 @@ const loadEventData = async evento => {
 const loadEnrolledData = async evento => {
     let req = justInfo
         ? await fetch(`api/inscritos.php`)
-        : await fetch(`api/inscritos-por-evento.php?id=${evento}`)
+        // : await fetch(`api/inscritos-por-evento.php?id=${evento}`)
+        : await fetch(`${baseUrl}?option=carregarInscritos&id=${evento}`)
     let res = await req.json()
     let lis = document.querySelector('.inscritos')
-    res.forEach(ins => lis.innerHTML += `<div data-id="${ins.id}">${ins.nome}</div>`)
+    res.forEach(ins => { 
+        let presente = parseInt(ins.presenca) ? ' class="selected"' : ''
+        lis.innerHTML += `<div data-id="${ins.id}"${presente}>${ins.nome.toLowerCase()}</div>`
+    })
+    showLocalStored()
 }
 
 let rollDiceFetchController
+
 const rollDice = async (id, name) => {
     if (rollDiceFetchController)
         rollDiceFetchController.abort()
@@ -118,21 +146,37 @@ const msg = (type, msg) => {
 const localStock = id => {
     if (justInfo) 
         return
-    
+
+    id = parseInt(id)
+
     if ( !joined.includes(id) )
         joined.push(id)
+
+    localStorage.setItem('joined', JSON.stringify(joined))
 }
 
 const saveTrigger = id => {
     id = id.substr(0, 4)
-    let target = document.querySelector(`[data-id="${id}"]`)
+    let target = document.querySelector(`[data-id="${parseInt(id)}"]`)
     if (!target) return msg('error', `Você não esta cadastrado neste evento!`)
     let name = target.innerText
     localStock(id)
     rollDice(id, name)
-    msg('ok', `Olá, ${name}!`)
+    msg('ok', `Olá, ${name.split(' ')[0]}!`)
     domInscritos.scrollTop = target.offsetTop - domInscritos.offsetTop - (domInscritos.offsetHeight / 2)
     target.classList.add('selected')
+}
+
+const tickTimeLeft = () => {
+    if (saving)
+        return
+
+    updateTimeLeft--
+
+    if (updateTimeLeft == 0) 
+        save()
+
+    domBubbleTimeLeft.innerText = updateTimeLeft
 }
 
 // -- Attach Events ---------------------------------------------------
