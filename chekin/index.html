@@ -162,14 +162,16 @@
 			height: 100%;
 			justify-content: flex-start;
 			align-items: center;
+			overflow: hidden;
 			/* padding: 1vw */
 		}
 
 		main .qrcode .video-handler {
 			position: relative;
 			overflow: hidden;
+			flex: none;
 			width: var(--quadrado-qrcode);
-			height: var(--quadrado-qrcode);
+			height: calc(var(--quadrado-qrcode)/1.6);
 		}
 
 		main .qrcode .video-handler video {
@@ -210,16 +212,19 @@
 			flex-direction: column;
 			align-items: center;
 			justify-content: center;
-			height: 100%
+			width: 100%;
+			font-size: 14vh;
+			flex-grow: 1
 		}
 
 		main .qrcode .eticoins .points {
-			font-size: 15vh
+			font-size: 100%;
 		}
 
 		main .qrcode .eticoins .nome {
 			text-align: center;
-			padding: 0 1em
+			padding: 0 1em;
+			font-size: 40%
 		}
 
 		.msgs {
@@ -264,6 +269,7 @@
 			position: absolute;
 			top: .5vh;
 			right: .5vh;
+			z-index: 4;
 			display: flex
 		}
 
@@ -276,6 +282,7 @@
 			align-items: center;
 			height: 3vw;
 			width: 3vw;
+			margin-left: .25vw;
 		}
 
 		.options {
@@ -308,6 +315,19 @@
 			color: #FFFFFF;
 			padding: .5em 0
 		}
+
+		.options select {
+			width: 100%;
+			border: 0 none;
+			color: white;
+			font-size: 100%;
+			padding: .5vw;
+			background: rgba(255, 255, 255, .2)
+		}
+
+		.options select option { 
+			color: black; 
+		}
 	</style>
 	<script defer src="instascan.min.js"></script>
 	<script defer src="main.js"></script>
@@ -316,10 +336,15 @@
 <body>
 	<div class="options" id="options">
 		<label>
-			<input type="checkbox" id="lista-de-espera"> permitir lista de espera
+			<select id="selecionar-evento">
+				<option>--</option>
+			</select>
 		</label>
 		<label>
-			<input type="checkbox" id="entrada-de-nao-cadastrados"> permitir de não cadastrados espera
+			<input type="checkbox" id="lista-de-espera"> Permitir entrada da lista de espera
+		</label>
+		<label>
+			<input type="checkbox" id="entrada-de-nao-cadastrados"> Permitir entrada de não cadastrados 
 		</label>
 	</div>
 	<div class="count">

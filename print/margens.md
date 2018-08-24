@@ -1,6 +1,6 @@
 mesmo sendo letter imprima em A4
 
-        12mm
+        13mm
     ━━╇━━━━━━╇━━
       │      │
 25mm  │      │ 25mm

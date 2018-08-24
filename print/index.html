@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Document</title>
+    <title>Print</title>
     <style>
         html,
         body {
@@ -28,7 +28,6 @@
         }
 
         .papper .inscrito {
-            border-style: 1px 1px 10px;
             width: calc(calc(100% / 2) - 1%);
             height: calc(100% / 5);
             display: flex;
@@ -53,31 +52,11 @@
 
 <body>
 </body>
-<script defer src="qr/qrcodejs/qrcode.min.js"></script>
+<script defer src="qrcodejs/qrcode.min.js"></script>
 <script>
-    const init = () => {
-        let data = [
-            { "id": 3301, "e": false, "nome": "xxx" },
-            { "id": 3302, "e": false, "nome": "No2" },
-            { "id": 3303, "e": false, "nome": "Nome de Pessoa da Silva 3" },
-            { "id": 3304, "e": false, "nome": "Nome de Pessoa da Silva 4" },
-            { "id": 3305, "e": false, "nome": "Nome de Pessoa da Silva 5" },
-            { "id": 3306, "e": false, "nome": "Nome de Pessoa da Silva 6" },
-            { "id": 3307, "e": false, "nome": "Nome de Pessoa da Silva 7" },
-            { "id": 3308, "e": false, "nome": "Nome de Pessoa da Silva 8" },
-            { "id": 3309, "e": false, "nome": "Nome de Pessoa da Silva 9" },
-            { "id": 3310, "e": false, "nome": "Nome de Pessoa da Silva 10" },
-            { "id": 3311, "e": false, "nome": "Nome de Pessoa da Silva 11" },
-            { "id": 3312, "e": false, "nome": "Nome de Pessoa da Silva 12" },
-            { "id": 3313, "e": false, "nome": "Nome de Pessoa da Silva 13" },
-            { "id": 3314, "e": false, "nome": "Nome de Pessoa da Silva 14" },
-            { "id": 3315, "e": false, "nome": "Nome de Pessoa da Silva 15" },
-            { "id": 3316, "e": false, "nome": "Nome de Pessoa da Silva 16" },
-            { "id": 3317, "e": false, "nome": "Nome de Pessoa da Silva 17" },
-            { "id": 3318, "e": false, "nome": "Nome de Pessoa da Silva 18" },
-            { "id": 3319, "e": false, "nome": "Nome de Pessoa da Silva 19" },
-            { "id": 3320, "e": false, "nome": "Nome de Pessoa da Silva 20" },
-        ]
+    const init = async () => {
+        let req = await fetch(location.search.substr(1))
+        let data = await req.json()
 
         const today = new Date()
 
@@ -91,6 +70,7 @@
                 height: 800,
                 colorDark: "#000000",
                 colorLight: "#FFFFFF",
+                useSVG: true,
                 correctLevel: QRCode.CorrectLevel.H
             });
 
@@ -110,13 +90,13 @@
             return el
         }
 
-        const createCode = (num) => {
+        const createCode = num => {
             let el = document.createElement('div')
             let str = num.toString()
             let pad = "0000"
             let ans = pad.substring(0, pad.length - str.length) + str
             el.className = 'code'
-            el.innerText = today.getFullYear() + ans
+            el.innerText = today.getFullYear() + "~" + ans
             return el
         }
 
@@ -130,18 +110,18 @@
             }
 
             let inscrito = createDiv('inscrito')
-            let img = createQrcode(d.id)
-            let code = createCode(d.id)
-            let name = createDiv('name', d.nome)
+            if (location.hash !== "#hide")
+                inscrito.appendChild(createCode(d.id))
 
-            inscrito.appendChild(code)
-            inscrito.appendChild(img)
-            inscrito.appendChild(name)
+            inscrito.appendChild(createQrcode(d.id))
+            inscrito.appendChild(createDiv('name', d.nome))
             papper.appendChild(inscrito)
 
             counter++
         })
     }
+
+    document.addEventListener("DOMContentLoaded", init)
 </script>
 
 </html>

@@ -1,4 +1,4 @@
-const updateAtTime = 2
+const updateAtTime = 31
 const baseUrl = "http://www.etic.ifc-camboriu.edu.br/etic-2018/server/apiRequests.php"
 
 // ----------------------------------------------------------------------------
@@ -11,6 +11,7 @@ console.log(":WEB CAM UTILIZADA")
 const domOptions = document.querySelector('#options')
 const domOptionWaitList = document.querySelector('#lista-de-espera')
 const domOptionFree = document.querySelector('#entrada-de-nao-cadastrados')
+const domSelectEvents = document.querySelector('#selecionar-evento')
 const domBubbleTimeLeft = document.querySelector('.time-left')
 const domBubbleInsc = document.querySelector('.insc')
 const domQrcodeInput = document.querySelector('.qrcode input')
@@ -34,17 +35,21 @@ const init = () => {
     attachEvents()
     loadEventData(event)
     loadEnrolledData(event)
-    
+
     let tickTimeLeftController = setInterval(tickTimeLeft, 1000)
 
     if (!event) {
         saving = true
-        clearInterval(tickTimeLeft)
+        clearInterval(tickTimeLeftController)
     }
 }
 
 const save = () => {
     saving = true
+    setTimeout(() => {
+        saving = false
+        updateTimeLeft = updateAtTime
+    }, 1000)
 }
 
 const showLocalStored = () => {
@@ -76,11 +81,8 @@ const scanner = async () => {
 }
 
 const loadEventData = async evento => {
-    if (!event) {
-        document.querySelector('.title').innerText = "saldo eticoins"
-        return
-    }
-
+    if (!event)
+        return document.querySelector('.title').innerText = "saldo eticoins"
     // let req = await fetch(`api/evento.php?id=${evento}`)
     let req = await fetch(`${baseUrl}?option=carregarAtividadeUnica&id=${evento}`)
     let res = await req.json()
@@ -89,14 +91,14 @@ const loadEventData = async evento => {
 
 const loadEnrolledData = async evento => {
     let req = !evento
+        // ? await fetch(`${baseUrl}?option=carregarTodosInscritos`)
         ? await fetch(`api/inscritos.php`)
         // : await fetch(`api/inscritos-por-evento.php?id=${evento}`)
-        // ? await fetch(`${baseUrl}?option=carregarTodosInscritos`)
         : await fetch(`${baseUrl}?option=carregarInscritos&id=${evento}`)
-    
-        let res = await req.json()
+
+    let res = await req.json()
     let lis = document.querySelector('.inscritos')
-    
+
     res.forEach(ins => {
         let className = []
 
@@ -169,7 +171,7 @@ const msg = (type, msg) => {
     }, 300)
 }
 
-const localStock = (id) => {
+const localStock = id => {
     id = parseInt(id)
 
     if (!joined.includes(id)) {
@@ -180,14 +182,20 @@ const localStock = (id) => {
     localStorage.setItem(localName, JSON.stringify(joined))
 }
 
+const toggleConf = async () => {
+    confIsOpen = !confIsOpen
+    domOptions.classList.toggle('show')
+    if (domOptions.classList.contains('show')) {
+        domSelectEvents.innerHTML += '<option>---</option>'
+        domSelectEvents.innerHTML += '<option value="?">Somente Saldo</option>'
+    }
+}
 
 const saveTrigger = id => {
     id = id.substr(0, 4)
 
-    if (id == "conf") {
-        confIsOpen = !confIsOpen
-        return domOptions.classList.toggle('show')
-    }
+    if (id == "conf")
+        return toggleConf()
 
     if (domOptionFree.checked) {
         msg('ok', `seja bem vindo, forasteiro!`)
@@ -235,6 +243,7 @@ const attachEvents = () => {
         saveTrigger(value)
     })
 
+    domSelectEvents.addEventListener('change', ev => location = domSelectEvents.value)
     domMsgs.addEventListener('transitionend', ev => domMsgs.classList.remove('show'))
     domMsgs.addEventListener('animationend', ev => domMsgs.classList.remove('show'))
     window.addEventListener('keydown', ev => domQrcodeInput.focus())
