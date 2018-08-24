@@ -3,9 +3,14 @@ const baseUrl = "http://www.etic.ifc-camboriu.edu.br/etic-2018/server/apiRequest
 
 // ----------------------------------------------------------------------------
 
-let updateTimeLeft = updateAtTime
-let saving = false
+console.log("?ID DO EVENTO")
+console.log(":WEB CAM UTILIZADA")
 
+// ----------------------------------------------------------------------------
+
+const domOptions = document.querySelector('#options')
+const domOptionWaitList = document.querySelector('#lista-de-espera')
+const domOptionFree = document.querySelector('#entrada-de-nao-cadastrados')
 const domBubbleTimeLeft = document.querySelector('.time-left')
 const domBubbleInsc = document.querySelector('.insc')
 const domQrcodeInput = document.querySelector('.qrcode input')
@@ -15,18 +20,27 @@ const domMsgs = document.querySelector('.msgs')
 const domEticoins = document.querySelector('.eticoins .points')
 const domEticoinsName = document.querySelector('.eticoins .nome')
 const args = document.location.search.substr(1).split(':')
-const event = args[0]
+const event = args[0] || null
 const camNo = args[1] || 0
-const justInfo = !!args[2] || false
-const joined = JSON.parse(localStorage.getItem('joined')) || []
+const localName = `joined-${event}`
+const joined = JSON.parse(localStorage.getItem(localName)) || []
+
+let updateTimeLeft = updateAtTime
+let saving = false
+let confIsOpen = false
 
 const init = () => {
-    if (!event && !justInfo) return alert("!!!")
     scanner()
     attachEvents()
     loadEventData(event)
     loadEnrolledData(event)
-    setInterval(tickTimeLeft, 1000)
+    
+    let tickTimeLeftController = setInterval(tickTimeLeft, 1000)
+
+    if (!event) {
+        saving = true
+        clearInterval(tickTimeLeft)
+    }
 }
 
 const save = () => {
@@ -36,6 +50,7 @@ const save = () => {
 const showLocalStored = () => {
     domBubbleInsc.innerText = joined.length
     joined.forEach(id => {
+        if (!id) return
         let el = document.querySelector(`[data-id="${id.toString()}"]`)
         if (el) el.classList.add('selected')
     })
@@ -44,7 +59,7 @@ const showLocalStored = () => {
 const scanner = async () => {
     let scanner = new Instascan.Scanner({
         video: domVideo,
-        refractoryPeriod: 1000
+        refractoryPeriod: 3000
     })
 
     try {
@@ -61,7 +76,7 @@ const scanner = async () => {
 }
 
 const loadEventData = async evento => {
-    if (justInfo) {
+    if (!event) {
         document.querySelector('.title').innerText = "saldo eticoins"
         return
     }
@@ -73,16 +88,27 @@ const loadEventData = async evento => {
 }
 
 const loadEnrolledData = async evento => {
-    let req = justInfo
+    let req = !evento
         ? await fetch(`api/inscritos.php`)
         // : await fetch(`api/inscritos-por-evento.php?id=${evento}`)
+        // ? await fetch(`${baseUrl}?option=carregarTodosInscritos`)
         : await fetch(`${baseUrl}?option=carregarInscritos&id=${evento}`)
-    let res = await req.json()
+    
+        let res = await req.json()
     let lis = document.querySelector('.inscritos')
-    res.forEach(ins => { 
-        let presente = parseInt(ins.presenca) ? ' class="selected"' : ''
-        lis.innerHTML += `<div data-id="${ins.id}"${presente}>${ins.nome.toLowerCase()}</div>`
+    
+    res.forEach(ins => {
+        let className = []
+
+        if (parseInt(ins.presenca))
+            className.push("selected")
+
+        if (parseInt(ins.espera))
+            className.push("espera")
+
+        lis.innerHTML += `<div class="${className.join(" ")}" data-espera="${ins.espera}" data-id="${ins.id}">${ins.nome.toLowerCase()}</div>`
     })
+
     showLocalStored()
 }
 
@@ -104,7 +130,7 @@ const rollDice = async (id, name) => {
         const doTheMagic = () => {
             if (!animating) return
             animationCurrent = --animationCurrent || startAt
-            domEticoins.innerText = animationCurrent+"/"+animationCurrent
+            domEticoins.innerText = animationCurrent + "/" + animationCurrent
             window.requestAnimationFrame(doTheMagic)
         }
         doTheMagic()
@@ -143,26 +169,45 @@ const msg = (type, msg) => {
     }, 300)
 }
 
-const localStock = id => {
-    if (justInfo) 
-        return
-
+const localStock = (id) => {
     id = parseInt(id)
 
-    if ( !joined.includes(id) )
+    if (!joined.includes(id)) {
         joined.push(id)
+        domBubbleInsc.innerText = joined.length
+    }
 
-    localStorage.setItem('joined', JSON.stringify(joined))
+    localStorage.setItem(localName, JSON.stringify(joined))
 }
+
 
 const saveTrigger = id => {
     id = id.substr(0, 4)
+
+    if (id == "conf") {
+        confIsOpen = !confIsOpen
+        return domOptions.classList.toggle('show')
+    }
+
+    if (domOptionFree.checked) {
+        msg('ok', `seja bem vindo, forasteiro!`)
+        localStock(id)
+        return
+    }
+
     let target = document.querySelector(`[data-id="${parseInt(id)}"]`)
-    if (!target) return msg('error', `Você não esta cadastrado neste evento!`)
-    let name = target.innerText
+
+    if (!target)
+        return msg('error', `Você não esta cadastrado neste evento!`)
+
+    let name = target.innerText.split(' ')[0]
+
+    if (target.dataset.espera == "1" && !domOptionWaitList.checked)
+        return msg('espera', `Olá, ${name}! aguarde a lista de espera ser liberada e tente novamente.`)
+
     localStock(id)
     rollDice(id, name)
-    msg('ok', `Olá, ${name.split(' ')[0]}!`)
+    msg('ok', `Olá, ${name}!`)
     domInscritos.scrollTop = target.offsetTop - domInscritos.offsetTop - (domInscritos.offsetHeight / 2)
     target.classList.add('selected')
 }
@@ -173,7 +218,7 @@ const tickTimeLeft = () => {
 
     updateTimeLeft--
 
-    if (updateTimeLeft == 0) 
+    if (updateTimeLeft == 0)
         save()
 
     domBubbleTimeLeft.innerText = updateTimeLeft

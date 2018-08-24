@@ -75,7 +75,8 @@
 		}
 
 		.title {
-			background: rgba(0, 0, 0, .1);
+			background: #2c3e50;
+			color: #FFFFFF;
 			flex: none;
 			width: 100%;
 			height: 20vh;
@@ -84,7 +85,11 @@
 			align-items: center;
 			font-size: 3.5vw;
 			padding: 0 3vw;
-			text-align: center
+			text-align: center;
+
+			box-shadow: 0px -5px 36px 16px black;
+			position: relative;
+			z-index: 3;
 		}
 
 		main {
@@ -93,7 +98,7 @@
 
 		main .inscritos {
 			height: 80vh;
-			width: 60vw;
+			width: calc(100vw - var(--quadrado-qrcode));
 			overflow-y: auto;
 			overflow-x: hidden;
 		}
@@ -101,7 +106,6 @@
 		main .inscritos>div {
 			padding: 1vw;
 			font-size: 2vw;
-			color: #777777;
 			display: flex;
 			align-items: center;
 			overflow: hidden;
@@ -110,11 +114,28 @@
 		}
 
 		main .inscritos>div:nth-child(odd) {
-			background: rgba(0, 0, 0, .05)
+			background: #ecf0f1;
+		}
+
+		main .inscritos>div:nth-child(even) {
+			background: #bdc3c7;
+		}
+
+		main .inscritos>div.espera {
+			color: rgba(255, 255, 255, .3)
+		}
+
+		main .inscritos>div.espera:nth-child(odd) {
+			background: #e74c3c
+		}
+
+		main .inscritos>div.espera:nth-child(even) {
+			background: #c0392b
 		}
 
 		main .inscritos>div.selected {
 			opacity: 1;
+			color: #000000;
 			animation: show 1s 1s;
 			animation-iteration-count: 3;
 		}
@@ -125,32 +146,55 @@
 			height: 1vw;
 			width: 1vw;
 			margin-right: 1vw;
-			background: #e74c3c;
+			background: red;
 			border-radius: 50%
 		}
 
 		main .inscritos>div.selected:before {
-			background: #27ae60
+			background: green
 		}
 
 		main .qrcode {
 			display: flex;
-			background: #333;
+			background: #34495e;
 			flex-direction: column;
-			width: 40vw;
+			width: var(--quadrado-qrcode);
 			height: 100%;
 			justify-content: flex-start;
 			align-items: center;
-			padding: 1vw
+			/* padding: 1vw */
 		}
 
-		main .qrcode video {
+		main .qrcode .video-handler {
+			position: relative;
+			overflow: hidden;
+			width: var(--quadrado-qrcode);
+			height: var(--quadrado-qrcode);
+		}
+
+		main .qrcode .video-handler video {
 			background: white;
+			position: relative;
 			flex: none;
-			width: 100%
+			width: 100%;
+			display: block
+		}
+
+
+		main .qrcode .video-handler:after {
+			position: absolute;
+			content: "";
+			box-shadow: 0 0 0 calc(var(--quadrado-qrcode) / 2) rgba(0, 30, 60, .6);
+			top: 50%;
+			left: 50%;
+			width: 20%;
+			height: 30%;
+			transform: translate(-50%, -50%)
 		}
 
 		main .qrcode input {
+			background: #2c3e50;
+			color: #DDDDDD;
 			display: flex;
 			font-size: 3vh;
 			flex: none;
@@ -173,6 +217,11 @@
 			font-size: 15vh
 		}
 
+		main .qrcode .eticoins .nome {
+			text-align: center;
+			padding: 0 1em
+		}
+
 		.msgs {
 			position: absolute;
 			top: 40vh;
@@ -185,11 +234,12 @@
 			display: flex;
 			justify-content: center;
 			align-items: center;
-			/* transition: 1s; */
 			font-size: 4vw;
 			opacity: 0;
 			visibility: hidden;
-			color: #FFFFFF
+			color: #FFFFFF;
+			text-align: center;
+			box-shadow: 0px 1px 20px 10px rgba(0, 0, 0, .2);
 		}
 
 		.msgs.show[data-type="ok"] {
@@ -203,6 +253,11 @@
 			visibility: visible;
 			transform: translateY(0vh);
 			animation: msgError 5s
+		}
+
+		.msgs.show[data-type="espera"] {
+			background: #d35400;
+			animation: msgError 10s
 		}
 
 		.count {
@@ -222,12 +277,51 @@
 			height: 3vw;
 			width: 3vw;
 		}
+
+		.options {
+			position: absolute;
+			top: 5vw;
+			bottom: 5vw;
+			left: 5vw;
+			right: 5vw;
+			background: #2980b9;
+			z-index: 99;
+			border-radius: 10px;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			flex-direction: column;
+			box-shadow: 0px 1px 20px 10px rgba(0, 0, 0, .2);
+			transition: 300ms;
+			opacity: 0;
+			visibility: hidden
+		}
+
+		.options.show {
+			opacity: 1;
+			visibility: visible
+		}
+
+		.options label {
+			width: 90%;
+			display: flex;
+			color: #FFFFFF;
+			padding: .5em 0
+		}
 	</style>
 	<script defer src="instascan.min.js"></script>
 	<script defer src="main.js"></script>
 </head>
 
 <body>
+	<div class="options" id="options">
+		<label>
+			<input type="checkbox" id="lista-de-espera"> permitir lista de espera
+		</label>
+		<label>
+			<input type="checkbox" id="entrada-de-nao-cadastrados"> permitir de não cadastrados espera
+		</label>
+	</div>
 	<div class="count">
 		<div class="bubble time-left">--</div>
 		<div class="bubble insc">--</div>
@@ -236,7 +330,9 @@
 	<div class="title">...</div>
 	<main>
 		<div class="qrcode">
-			<video></video>
+			<div class="video-handler">
+				<video></video>
+			</div>
 			<input>
 			<div class="eticoins">
 				<div class="points">---</div>
