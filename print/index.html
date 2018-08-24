@@ -24,15 +24,18 @@
             display: flex;
             flex-wrap: wrap;
             justify-content: space-between;
-            /* border: 10px solid red */
+            border: 1px solid red;
+            /* flex-direction: column */
         }
 
         .papper .inscrito {
             width: calc(calc(100% / 2) - 1%);
             height: calc(100% / 5);
             display: flex;
+            flex: none;
             justify-content: center;
-            align-items: center
+            align-items: center;
+            border: 1px solid green
         }
 
         .papper .inscrito img,
@@ -47,6 +50,13 @@
             text-align: center;
             padding: 10px
         }
+
+        @media print {
+            .papper,
+            .papper .inscrito {
+                border: 0 none
+            }
+        }
     </style>
 </head>
 
@@ -59,6 +69,7 @@
         let data = await req.json()
 
         const today = new Date()
+        const qtdPerPg = 10
 
         const createQrcode = (num) => {
             let dom = document.createElement('div')
@@ -104,7 +115,7 @@
         let papper
 
         data.forEach(d => {
-            if (counter % 10 == 0) {
+            if (counter % qtdPerPg == 0) {
                 papper = createPapper()
                 document.body.appendChild(papper)
             }
@@ -119,6 +130,11 @@
 
             counter++
         })
+
+        // resto
+        while (counter++ %qtdPerPg)
+            papper.appendChild(createDiv('inscrito'))
+       
     }
 
     document.addEventListener("DOMContentLoaded", init)

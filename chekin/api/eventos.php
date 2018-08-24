@@ -1,8 +1,5 @@
 [
-	{"id": 1, "nome": "evento 1", "eticoin": 2},
-	{"id": 2, "nome": "evento 1", "eticoin": 2},
-	{"id": 3, "nome": "evento 1", "eticoin": 2},
-	{"id": 4, "nome": "evento 1", "eticoin": 2},
-	{"id": 5, "nome": "evento 1", "eticoin": 2},
-	{"id": 6, "nome": "evento 1", "eticoin": 2}
+	{"id": 70, "nome": "palestra 70 ", "eticoin": 2},
+	{"id": 71, "nome": "palestra 71", "eticoin": 2},
+	{"id": 74, "nome": "minicurso 44", "eticoin": 2}
 ]

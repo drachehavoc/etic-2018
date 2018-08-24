@@ -9,6 +9,7 @@ console.log(":WEB CAM UTILIZADA")
 // ----------------------------------------------------------------------------
 
 const domOptions = document.querySelector('#options')
+const domOptionClose = domOptions.querySelector('.close')
 const domOptionWaitList = document.querySelector('#lista-de-espera')
 const domOptionFree = document.querySelector('#entrada-de-nao-cadastrados')
 const domSelectEvents = document.querySelector('#selecionar-evento')
@@ -186,8 +187,17 @@ const toggleConf = async () => {
     confIsOpen = !confIsOpen
     domOptions.classList.toggle('show')
     if (domOptions.classList.contains('show')) {
-        domSelectEvents.innerHTML += '<option>---</option>'
-        domSelectEvents.innerHTML += '<option value="?">Somente Saldo</option>'
+        domSelectEvents.innerHTML = '<option>loading</option>'
+        domSelectEvents.innerHTML += '<option value="">saldo de eticoins</option>'
+        const load = async () => {
+            let req = await fetch('api/eventos.php') 
+            let res = await req.json()
+            domSelectEvents.querySelector("option").innerText = "selecione um evento"
+            res.forEach(ev => {
+                domSelectEvents.innerHTML += `<option value="${ev.id}">${ev.nome.toLowerCase()}</option>`
+            })
+        }
+        load()
     }
 }
 
@@ -236,14 +246,15 @@ const tickTimeLeft = () => {
 
 const attachEvents = () => {
     domQrcodeInput.addEventListener('keyup', ev => {
-        if (ev.target.value.length < 4) return
+        if (domQrcodeInput.value.length < 4) return
         let value = ev.target.value
         ev.preventDefault()
-        ev.target.value = ''
+        domQrcodeInput.value = ''
         saveTrigger(value)
     })
 
-    domSelectEvents.addEventListener('change', ev => location = domSelectEvents.value)
+    domSelectEvents.addEventListener('change', ev => location = "?"+domSelectEvents.value)
+    domOptionClose.addEventListener('click', ev => domOptions.classList.remove('show'))
     domMsgs.addEventListener('transitionend', ev => domMsgs.classList.remove('show'))
     domMsgs.addEventListener('animationend', ev => domMsgs.classList.remove('show'))
     window.addEventListener('keydown', ev => domQrcodeInput.focus())

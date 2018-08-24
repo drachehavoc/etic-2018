@@ -325,8 +325,23 @@
 			background: rgba(255, 255, 255, .2)
 		}
 
-		.options select option { 
-			color: black; 
+		.options select option {
+			color: black;
+		}
+
+		.options .close {
+			position: absolute;
+			background: #c0392b;
+			border-radius: 100%;
+			width: 3vw;
+			height: 3vw;
+			font-size: 2vw;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			color: #FFFFFF;
+			right: 1vw;
+			top: 1vw;
 		}
 	</style>
 	<script defer src="instascan.min.js"></script>
@@ -335,6 +350,7 @@
 
 <body>
 	<div class="options" id="options">
+		<div class="close">X</div>
 		<label>
 			<select id="selecionar-evento">
 				<option>--</option>
@@ -344,7 +360,7 @@
 			<input type="checkbox" id="lista-de-espera"> Permitir entrada da lista de espera
 		</label>
 		<label>
-			<input type="checkbox" id="entrada-de-nao-cadastrados"> Permitir entrada de não cadastrados 
+			<input type="checkbox" id="entrada-de-nao-cadastrados"> Permitir entrada de não cadastrados
 		</label>
 	</div>
 	<div class="count">

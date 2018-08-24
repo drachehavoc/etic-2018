@@ -7,3 +7,14 @@ mesmo sendo letter imprima em A4
       │      │
     ━━╇━━━━━━╇━━
         30mm
+
+
+NO GABINETE USE
+
+        25mm
+    ━━╇━━━━━━╇━━
+      │      │
+25mm  │      │ 30mm
+      │      │
+    ━━╇━━━━━━╇━━
+        20mm
