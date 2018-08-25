@@ -1,4 +1,4 @@
-const updateAtTime = 3
+const updateAtTime = 30
 const baseUrl = "http://www.etic.ifc-camboriu.edu.br/etic-2018/server/apiRequests.php"
 
 // ----------------------------------------------------------------------------
@@ -48,9 +48,16 @@ const init = () => {
 }
 
 const save = async () => {
+    if (!joined.length)
+        return updateTimeLeft = updateAtTime
+
+    let link = (domOptionFree.checked)    
+        ? `${baseUrl}?option=registrarPresencasPermissiva`
+        : `${baseUrl}?option=registrarPresencas`
+
     saving = true
 
-    let req = await fetch(`${baseUrl}?option=registrarPresencas`, {
+    let req = await fetch(link, {
         method: "POST",
         body: JSON.stringify({
             id: event,
@@ -60,14 +67,15 @@ const save = async () => {
 
     let res = await req.json()
 
-    console.log(res)
+    if (res.status == 200) {
+        sincronized = sincronized.concat(joined)
+        joined = []
+        localStorage.setItem(localName, JSON.stringify(joined))
+    }
 
-    // setTimeout(() => {
-    //     saving = false
-    //     updateTimeLeft = updateAtTime
-    //     sincronized = sincronized.concat(joined)
-    //     joined = []
-    // }, 1000)
+    saving = false
+    domBubbleInsc.innerText = joined.length
+    updateTimeLeft = updateAtTime
 }
 
 const showLocalStored = () => {
@@ -121,8 +129,10 @@ const loadEnrolledData = async evento => {
     res.forEach(ins => {
         let className = []
 
-        if (parseInt(ins.presenca))
+        if (parseInt(ins.presenca)) {
             className.push("selected")
+            sincronized.push(parseInt(ins.id))
+        }
 
         if (parseInt(ins.espera))
             className.push("espera")
@@ -163,8 +173,12 @@ const rollDice = async (id, name) => {
     }
 
     const success = value => {
-        console.log(id)
-        setTimeout(() => stopAnimate(value.eticoins), 1000)
+        setTimeout(() => {
+            stopAnimate(value.eticoinsTotais)
+            let v = domEticoinsName.innerText = value.nome.split(' ')[0].toLowerCase()
+            v = v.charAt(0).toUpperCase() + v.substr(1)
+             domEticoinsName.innerText = v
+        }, 1000)
     }
 
     const fail = error => {
@@ -192,10 +206,10 @@ const msg = (type, msg) => {
     }, 300)
 }
 
-const localStock = id => {
+const localStock = (id, target) => {
     id = parseInt(id)
 
-    if (!joined.includes(id)) {
+    if (!joined.includes(id) && !sincronized.includes(id)) {
         joined.push(id)
         domBubbleInsc.innerText = joined.length
     }
@@ -228,13 +242,15 @@ const saveTrigger = id => {
     if (id == "conf")
         return toggleConf()
 
-    if (domOptionFree.checked) {
+    let target = document.querySelector(`[data-id="${parseInt(id)}"]`)
+
+
+    if (!target && domOptionFree.checked) {
         msg('ok', `seja bem vindo, forasteiro!`)
         localStock(id)
+        rollDice(id, "")
         return
     }
-
-    let target = document.querySelector(`[data-id="${parseInt(id)}"]`)
 
     if (!target)
         return msg('error', `Você não esta cadastrado neste evento!`)
@@ -244,7 +260,7 @@ const saveTrigger = id => {
     if (target.dataset.espera == "1" && !domOptionWaitList.checked)
         return msg('espera', `Olá, ${name}! aguarde a lista de espera ser liberada e tente novamente.`)
 
-    localStock(id)
+    localStock(id, target)
     rollDice(id, name)
     msg('ok', `Olá, ${name}!`)
     domInscritos.scrollTop = target.offsetTop - domInscritos.offsetTop - (domInscritos.offsetHeight / 2)
