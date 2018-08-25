@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>sorteio</title>
+    <style>
+        html,
+        body {
+            padding: 0;
+            margin: 0;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        div {
+            --w: 80vw;
+            --y: 20vh;
+            width: var(--w);
+            height: var(--y);
+            background: pink;
+            position: relative;
+
+            transform-style: preserve-3d;
+            transform: rotateX(-29deg) rotateY(-127deg);
+        }
+
+        div>div {
+            display: flex;
+            position: absolute;
+            height: 100%;
+            width: 100%;
+            align-items: center;
+            justify-content: center
+        }
+
+        div>div:nth-child(1) {
+            background: #1abc9c;
+            transform: translateZ(calc(var(--w)/2)) translateX(0); 
+        }
+
+        div>div:nth-child(2) {
+            background: #2ecc71;
+            transform: translateZ(0) translateX(50%) rotateY(90deg);
+        }
+
+        div>div:nth-child(3) {
+            background: #3498db;
+            transform: translateZ(  calc(var(--w) / 2 * -1) ) translateX(0%) rotateY(180deg)
+        }
+
+        div>div:nth-child(4) {
+            background: #e74c3c;
+            transform: translateZ(0) translateX(-50%) rotateY(-90deg);
+        }
+
+        @keyframes rotateThis {
+            0% {
+                transform: rotateX(10deg) rotateY(20deg);
+            }
+            
+            50% {
+                transform: rotateX(10deg) rotateY(360deg);
+            }
+
+            100% {
+                transform: rotateX(10deg) rotateY(740deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div>
+        <div>UM</div>
+        <div>DOIS</div>
+        <div>TRÊS</div>
+        <div>QUATRO</div>
+    </div>
+
+</body>
+
+</html>

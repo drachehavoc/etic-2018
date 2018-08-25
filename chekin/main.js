@@ -1,4 +1,4 @@
-const updateAtTime = 31
+const updateAtTime = 3
 const baseUrl = "http://www.etic.ifc-camboriu.edu.br/etic-2018/server/apiRequests.php"
 
 // ----------------------------------------------------------------------------
@@ -25,11 +25,13 @@ const args = document.location.search.substr(1).split(':')
 const event = args[0] || null
 const camNo = args[1] || 0
 const localName = `joined-${event}`
-const joined = JSON.parse(localStorage.getItem(localName)) || []
 
+let joined = JSON.parse(localStorage.getItem(localName)) || []
+let sincronized = []
 let updateTimeLeft = updateAtTime
 let saving = false
 let confIsOpen = false
+let valorEvento = 0
 
 const init = () => {
     scanner()
@@ -45,12 +47,27 @@ const init = () => {
     }
 }
 
-const save = () => {
+const save = async () => {
     saving = true
-    setTimeout(() => {
-        saving = false
-        updateTimeLeft = updateAtTime
-    }, 1000)
+
+    let req = await fetch(`${baseUrl}?option=registrarPresencas`, {
+        method: "POST",
+        body: JSON.stringify({
+            id: event,
+            usuarios: joined
+        })
+    })
+
+    let res = await req.json()
+
+    console.log(res)
+
+    // setTimeout(() => {
+    //     saving = false
+    //     updateTimeLeft = updateAtTime
+    //     sincronized = sincronized.concat(joined)
+    //     joined = []
+    // }, 1000)
 }
 
 const showLocalStored = () => {
@@ -87,13 +104,14 @@ const loadEventData = async evento => {
     // let req = await fetch(`api/evento.php?id=${evento}`)
     let req = await fetch(`${baseUrl}?option=carregarAtividadeUnica&id=${evento}`)
     let res = await req.json()
+    valorEvento = parseInt(res.eticoin)
     document.querySelector('.title').innerText = res.nome
 }
 
 const loadEnrolledData = async evento => {
     let req = !evento
-        // ? await fetch(`${baseUrl}?option=carregarTodosInscritos`)
-        ? await fetch(`api/inscritos.php`)
+        // ? await fetch(`api/inscritos.php`)
+        ? await fetch(`${baseUrl}?option=carregarTodosInscritos`)
         // : await fetch(`api/inscritos-por-evento.php?id=${evento}`)
         : await fetch(`${baseUrl}?option=carregarInscritos&id=${evento}`)
 
@@ -133,7 +151,7 @@ const rollDice = async (id, name) => {
         const doTheMagic = () => {
             if (!animating) return
             animationCurrent = --animationCurrent || startAt
-            domEticoins.innerText = animationCurrent + "/" + animationCurrent
+            domEticoins.innerText = animationCurrent
             window.requestAnimationFrame(doTheMagic)
         }
         doTheMagic()
@@ -141,11 +159,12 @@ const rollDice = async (id, name) => {
 
     const stopAnimate = value => {
         animating = false
-        domEticoins.innerText = value
+        domEticoins.innerText = parseInt(value) + (sincronized.includes(parseInt(id)) ? 0 : valorEvento)
     }
 
     const success = value => {
-        setTimeout(() => stopAnimate(value), 1000)
+        console.log(id)
+        setTimeout(() => stopAnimate(value.eticoins), 1000)
     }
 
     const fail = error => {
@@ -157,8 +176,9 @@ const rollDice = async (id, name) => {
 
     domEticoinsName.innerText = name
 
-    fetch(`api/eticoins-por-inscrito.php?id=${id}`, { signal })
-        .then(r => r.text())
+    fetch(`${baseUrl}?option=carregarEticoins&id=${parseInt(id)}`, { signal })
+        // fetch(`api/eticoins-por-inscrito.php?id=${id}`, { signal })
+        .then(r => r.json())
         .then(success)
         .catch(fail)
 }
@@ -190,7 +210,8 @@ const toggleConf = async () => {
         domSelectEvents.innerHTML = '<option>loading</option>'
         domSelectEvents.innerHTML += '<option value="">saldo de eticoins</option>'
         const load = async () => {
-            let req = await fetch('api/eventos.php') 
+            // let req = await fetch('api/eventos.php') 
+            let req = await fetch(`${baseUrl}?option=carregarTodasAtividades`)
             let res = await req.json()
             domSelectEvents.querySelector("option").innerText = "selecione um evento"
             res.forEach(ev => {
@@ -202,7 +223,7 @@ const toggleConf = async () => {
 }
 
 const saveTrigger = id => {
-    id = id.substr(0, 4)
+    id = id.substr(0, 5)
 
     if (id == "conf")
         return toggleConf()
@@ -246,14 +267,14 @@ const tickTimeLeft = () => {
 
 const attachEvents = () => {
     domQrcodeInput.addEventListener('keyup', ev => {
-        if (domQrcodeInput.value.length < 4) return
+        if (domQrcodeInput.value.length < 5) return
         let value = ev.target.value
         ev.preventDefault()
         domQrcodeInput.value = ''
         saveTrigger(value)
     })
 
-    domSelectEvents.addEventListener('change', ev => location = "?"+domSelectEvents.value)
+    domSelectEvents.addEventListener('change', ev => location = "?" + domSelectEvents.value)
     domOptionClose.addEventListener('click', ev => domOptions.classList.remove('show'))
     domMsgs.addEventListener('transitionend', ev => domMsgs.classList.remove('show'))
     domMsgs.addEventListener('animationend', ev => domMsgs.classList.remove('show'))

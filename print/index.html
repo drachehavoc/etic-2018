@@ -48,7 +48,8 @@
         .papper .inscrito .code {
             writing-mode: vertical-rl;
             text-align: center;
-            padding: 10px
+            padding: 10px;
+            text-transform: capitalize
         }
 
         @media print {
@@ -104,10 +105,10 @@
         const createCode = num => {
             let el = document.createElement('div')
             let str = num.toString()
-            let pad = "0000"
+            let pad = "00000"
             let ans = pad.substring(0, pad.length - str.length) + str
             el.className = 'code'
-            el.innerText = today.getFullYear() + "~" + ans
+            el.innerText = ans
             return el
         }
 
@@ -125,7 +126,7 @@
                 inscrito.appendChild(createCode(d.id))
 
             inscrito.appendChild(createQrcode(d.id))
-            inscrito.appendChild(createDiv('name', d.nome))
+            inscrito.appendChild(createDiv('name', d.nome.toLowerCase()))
             papper.appendChild(inscrito)
 
             counter++
