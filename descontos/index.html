@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        
+        body {
+            background: #333
+        }
+    
+    </style>
+</head>
+
+<body>
+
+    <div>
+        <input class="code">
+    </div>
+
+    <script>
+        const baseUrl = "http://200.135.34.151/etic-2018/server/apiRequests.php"
+
+
+        const subs = async (id, value) => {
+            let req = await fetch(`${baseUrl}?option=gastarEticoins&id=${parseInt(id)}&gasto=${parseInt(value)}`)
+            let res = await req.text()
+            console.log(res)
+        }
+
+    </script>
+
+</body>
+
+</html>

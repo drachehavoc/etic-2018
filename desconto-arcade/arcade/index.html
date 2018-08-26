@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        html,
+        body {
+            padding: 0;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        * {
+            box-sizing: border-box
+        }
+
+        body {
+            border: 1px solid red;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        .counter {
+            background: red;
+            border-radius: 50%;
+            width: 10vw;
+            height: 10vw;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            font-size: 5vw;
+            transform: translateY(-50%)
+        }
+
+        .hideDude {
+            position: absolute;
+            transform: translateY(-100%);
+            background: green;
+            width: 100vw;
+            height: 100vh;
+            transition: 1s;
+            opacity: 0;
+        }
+
+        .hideDude.hiding {
+            opacity: 1;
+            transform: translateY(0%);
+        }
+
+        button {
+            position: absolute;
+            left: 0;
+        }
+    </style>
+</head>
+
+<body style="background-color:rgba(0,0,0,0);">
+
+    <div class="hideDude hiding"></div>
+    <div class="counter">0</div>
+
+    <script>
+        let maxRepeat = 1
+        let time = 3
+
+        // -----------------------------------------------------------
+
+        const domCounter = document.querySelector('.counter')
+        const hideDudeDude = document.querySelector('.hideDude')
+
+        let maxRepeatTime = 0
+        let timecounter = 0
+        let cnt
+
+        const regres = () => {
+            if (maxRepeatTime >= maxRepeat+1) {
+                alert("sem mais fichas")
+                return
+            }
+
+            maxRepeatTime++
+            timecounter += time
+            domCounter.innerText = timecounter
+            hideDudeDude.classList.remove('hiding')
+            clearInterval(cnt)
+            cnt = setInterval(() => {
+                domCounter.innerText = timecounter--
+                if (timecounter < 0) {
+                    clearInterval(cnt)
+                    maxRepeatTime = 0
+                    hideDudeDude.classList.add('hiding')
+                }
+            }, 1000)
+        }
+        
+        document.body.addEventListener('click', regres)
+    </script>
+</body>
+
+</html>

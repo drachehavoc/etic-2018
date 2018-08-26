@@ -1,0 +1,1 @@
+start "chekin" chrome http://200.135.34.151/vrl/checkin/? --user-data-dir=C:\ChromeTempFiles --unsafely-treat-insecure-origin-as-secure=http://200.135.34.151 --allow-running-insecure-content --reduce-security-for-testing --kiosk
