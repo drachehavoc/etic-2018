@@ -7,30 +7,204 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Document</title>
     <style>
-        
+        html,
         body {
-            background: #333
+            margin: 0;
+            padding: 0
         }
-    
+
+        * {
+            box-sizing: border-box
+        }
+
+        body {
+            background: #333;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .qr {
+            flex: none;
+            width: 50%
+        }
+
+        .qr .video-handler {
+            width: 100%;
+            background: rgba(0, 0, 0, .2);
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .qr .video-handler video {
+            width: 100%
+        }
+
+        .qr .code {
+            width: 100%;
+            border: 0 none;
+            padding: 1vw;
+            font-size: 3vw;
+            text-align: center;
+            outline: none;
+            background: rgba(0, 0, 0, .2);
+            color: #FFF;
+        }
+
+        .qr .log {}
+
+        .qr .log .stock {
+            height: 15vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 3vw;
+            color: #FFF;
+            transition: 300ms;
+            opacity: 0;
+            transform: translateY(10%)
+        }
+
+        .qr .log .stock.show {
+            opacity: 1;
+            transform: translateY(0%)
+        }
+
+        .qr .log .hist {
+            opacity: .1;
+            color: #CCC;
+            height: 5em;
+            overflow: auto;
+            transition: 300ms
+        }
+
+        .qr .log .hist:hover {
+            opacity: 1;
+        }
+
+        .qr .log .hist>* {
+            display: block;
+            padding: .5em
+        }
+
+
+        .qr .log .hist>[data-type="ok"] {
+            background: transparent
+        }
+
+        [data-type="ok"] {
+            background: #7ef5af
+        }
+
+        [data-type="error"] {
+            background: #e74c3c
+        }
+
+        [data-type="warn"] {
+            background: #e67e22
+        }
     </style>
 </head>
 
 <body>
 
-    <div>
+    <div class="qr">
+        <div class="video-handler">
+            <video></video>
+        </div>
         <input class="code">
+        <div class="log">
+            <div class="stock">20/30 - fulano</div>
+            <div class="hist"></div>
+        </div>
     </div>
 
+    <script defer src="instascan.min.js"></script>
     <script>
         const baseUrl = "http://200.135.34.151/etic-2018/server/apiRequests.php"
+        const domCode = document.querySelector('.code')
+        const domLog = document.querySelector('.log')
+        const domLogStock = document.querySelector('.log .stock')
+        const domLogHist = document.querySelector('.log .hist')
 
-
-        const subs = async (id, value) => {
-            let req = await fetch(`${baseUrl}?option=gastarEticoins&id=${parseInt(id)}&gasto=${parseInt(value)}`)
-            let res = await req.text()
-            console.log(res)
+        const getConf = (msg, store, init) => {
+            v = parseInt(prompt(msg, localStorage.getItem(store) || init))
+            if (isNaN(v))
+                return getConf(msg, store, init)
+            localStorage.setItem(store, v)
+            return v
         }
 
+        let preco = getConf('quanto custa a brincadera?', 'preco', 2)
+        let tempoMin = getConf('quantos minutos dura a brincadeira?', 'tempo', 5)
+
+        const subs = async id => {
+            id = parseInt(id)
+            let req = await fetch(`${baseUrl}?option=gastarEticoins&id=${id}&gasto=${parseInt(preco)}`)
+            let res = await req.json()
+            let line = `${res.eticoinsGastos}/${res.eticoinsTotais} - ${res.nome}`
+
+            let type = !res.nome
+                ? 'error'
+                : res.erro
+                    ? 'warn'
+                    : 'ok'
+
+            if (type == 'error')
+                line = `erro: ${id}`
+
+            domLogStock.innerHTML = line
+            domLogHist.innerHTML = `<code data-type="${type}">${line}</code>` + domLogHist.innerHTML
+            domLogStock.dataset.type = type
+            domLogStock.classList.add('show')
+        }
+
+        const scanner = async () => {
+            let scanner = new Instascan.Scanner({
+                video: document.querySelector('video'),
+                refractoryPeriod: 3000
+            })
+
+            try {
+                let cameras = await Instascan.Camera.getCameras()
+                if (cameras.length > 0)
+                    scanner.start(cameras[0])
+                else
+                    alert('No cameras found.')
+            } catch (e) {
+                console.error(e)
+            }
+
+            scanner.addListener('scan', v => subs(v))
+        }
+
+        document.addEventListener("DOMContentLoaded", scanner)
+        window.addEventListener('keydown', ev => domCode.focus())
+
+        domCode.addEventListener('keydown', ev => {
+            if (ev.which !== 13) return
+            subs(domCode.value)
+            domCode.value = ''
+        })
+
+        domCode.addEventListener('keyup', ev => {
+            if (domCode.value.length < 5) return
+            ev.preventDefault()
+            subs(domCode.value)
+            domCode.value = ''
+        })
+
+        let domLogStockController
+
+        domLogStock.addEventListener('transitionend', ev => {
+            clearTimeout(domLogStockController)
+            domLogStockController = setTimeout(() => {
+                domLogStock.classList.remove('show')
+            }, 1000)
+        })
     </script>
 
 </body>

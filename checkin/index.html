@@ -127,7 +127,7 @@
 			text-align: center;
 			padding: 5vw;
 			font-size: 5vw;
-			color: #27ae60;
+			color: #7ef5af;
 			animation: loading 1s ease infinite;
 		}
 
@@ -210,11 +210,10 @@
 			display: block
 		}
 
-
 		main .qrcode .video-handler:after {
 			position: absolute;
 			content: "";
-			box-shadow: 0 0 0 calc(var(--quadrado-qrcode) / 2) rgba(0, 30, 60, .6);
+			box-shadow: 0 0 0 calc(var(--quadrado-qrcode)) rgba(0, 30, 60, .6);
 			top: 50%;
 			left: 50%;
 			width: 20%;
@@ -393,7 +392,13 @@
 			}
 
 			main .qrcode .video-handler {
-				/* display: none */
+				height: 100%;
+				width: 50%;
+				flex: none
+			}
+
+			main .qrcode .video-handler video {
+				transform: scaleX(1) !important;
 			}
 
 			main .qrcode .eticoins {

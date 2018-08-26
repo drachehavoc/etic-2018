@@ -113,8 +113,7 @@ const scanner = async () => {
 
     let scanner = new Instascan.Scanner({
         video: domVideo,
-        refractoryPeriod: 3000,
-        mirror: mobile 
+        refractoryPeriod: 3000 
     })
 
     try {
@@ -259,8 +258,8 @@ const toggleConf = async () => {
     }
 }
 
-const saveTrigger = () => {
-    let id = clearInput()
+const saveTrigger = (id) => {
+    id = id || clearInput()
 
     if (id == "conf")
         return toggleConf()

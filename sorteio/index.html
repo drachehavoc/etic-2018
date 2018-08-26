@@ -6,84 +6,225 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>sorteio</title>
+    <link href="https://fonts.googleapis.com/css?family=Ubuntu" rel="stylesheet">
     <style>
+        select {
+            border: 0 none;
+            width: 100%;
+        }
+
         html,
         body {
+            font-family: 'Ubuntu', sans-serif;
             padding: 0;
             margin: 0;
             width: 100vw;
             height: 100vh;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            --box: 15vh;
+
+            background-image: url(http://www.etic.ifc-camboriu.edu.br/2018/img/png/logo.png);
+            background-repeat: no-repeat;
+            background-position: center center;
+            background-size: auto 50%;
+        }
+
+        .lista {
+            width: 100%;
+            transition: 6s cubic-bezier(1, 0, 0, 1);
+            text-align: center;
+            text-transform: capitalize;
+            transform: translateY(45vh);
+            position: absolute;
+            top: 50%
+        }
+
+        .lista div.i {
+            color: #FFF;
+            /* padding: 2vh; */
+            font-size: 5vh;
+            height: var(--box);
+            overflow: hidden;
+            /* text-shadow: 2px 2px 8px #000; */
             display: flex;
             justify-content: center;
             align-items: center;
         }
 
-        div {
-            --w: 80vw;
-            --y: 20vh;
-            width: var(--w);
-            height: var(--y);
-            background: pink;
-            position: relative;
-
-            transform-style: preserve-3d;
-            transform: rotateX(-29deg) rotateY(-127deg);
-        }
-
-        div>div {
-            display: flex;
-            position: absolute;
-            height: 100%;
-            width: 100%;
-            align-items: center;
-            justify-content: center
-        }
-
-        div>div:nth-child(1) {
-            background: #1abc9c;
-            transform: translateZ(calc(var(--w)/2)) translateX(0); 
-        }
-
-        div>div:nth-child(2) {
+        .lista div.i:nth-child(odd) {
             background: #2ecc71;
-            transform: translateZ(0) translateX(50%) rotateY(90deg);
         }
 
-        div>div:nth-child(3) {
-            background: #3498db;
-            transform: translateZ(  calc(var(--w) / 2 * -1) ) translateX(0%) rotateY(180deg)
+        .lista div.i:nth-child(even) {
+            background: #27ae60
         }
 
-        div>div:nth-child(4) {
-            background: #e74c3c;
-            transform: translateZ(0) translateX(-50%) rotateY(-90deg);
+        .sorteado {
+            position: absolute;
+            top: 50%;
+            left: 0%;
+            height: var(--box);
+            width: 100%;
+            /* background: #d35400; */
+            box-shadow: 0px 0px 0vh 0vh #000;
+            transform: translateY(0%);
+            z-index: 999;
+            transition: 1s
         }
 
-        @keyframes rotateThis {
-            0% {
-                transform: rotateX(10deg) rotateY(20deg);
-            }
-            
-            50% {
-                transform: rotateX(10deg) rotateY(360deg);
-            }
+        .sorteado.show {
+            box-shadow: 0px 0px 16vh 8vh #000;
+        }
 
-            100% {
-                transform: rotateX(10deg) rotateY(740deg);
-            }
+        .conf {
+            position: absolute;
+            z-index: 99999;
         }
     </style>
 </head>
 
 <body>
+    <select></select>
+    <div class="sorteado"></div>
+    <div class="lista"></div>
+    <script>
+        const baseUrl = "http://200.135.34.151/etic-2018/server/apiRequests.php"
+        let domSorteado = document.querySelector('.sorteado')
+        let domListaReal
+        let domSelect = document.querySelector('select')
+        let domLista = document.querySelector('.lista')
+        let range = []
 
-    <div>
-        <div>UM</div>
-        <div>DOIS</div>
-        <div>TRÊS</div>
-        <div>QUATRO</div>
-    </div>
+        console.table({
+            "maior quantidade eticoins": ['q', 'Q'],
+            "maior gasto eticoins": ['g', 'G'],
+            "maior quantidade de convites": ['c', 'C']
+        })
 
+        const init = () => {
+            let src = location.search.substr(1).split(':')
+            let url = (src[0] == "-")
+                ? `${baseUrl}?option=carregarTodosInscritos`
+                : `${baseUrl}?option=presencasAtividade&id=${src[0]}`
+
+            domSelect.remove()
+
+            fetch(url)
+                .then(req => req.json())
+                .then(res => {
+                    if (res.error) {
+                        alert("!!!")
+                        return
+                    }
+
+                    let html = ""
+                    let htmlCode = "<div class='real'>"
+
+                    res.forEach(v => {
+                        range.push(v.id)
+                        htmlCode += `<div class="i" data-id='${v.id}'>${v.nome.toLowerCase()}</div>`
+                        html += `<div class="i">${v.nome.toLowerCase()}</div>`
+                    })
+                    htmlCode += "</div>"
+                    // domLista.innerHTML = html + htmlCode + html
+                    domLista.innerHTML = htmlCode
+                    domListaReal = domLista.querySelector('.real')
+                })
+        }
+
+
+        const randId = () => {
+            return range[Math.floor(Math.random() * range.length)]
+        }
+
+        const sortear = id => {
+            domSorteado.classList.remove('show')
+            let el = domListaReal.querySelector(`[data-id="${id}"]`)
+            tp = el.getBoundingClientRect().y
+            tp = el.offsetTop
+            domLista.style.transform = `translateY(-${tp}px)`
+        }
+
+        const carregarEventos = () => {
+            fetch(`${baseUrl}?option=carregarTodasAtividades`)
+                .then(req => req.json())
+                .then(res => {
+                    domSelect.innerHTML = `<option value="">---</option>`
+                    domSelect.innerHTML += `<option value="?-:todos">todos</option>`
+                    res.forEach(ev =>
+                        domSelect.innerHTML += `<option value="?${ev.id}">${ev.nome}</option>`
+                    )
+                })
+        }
+
+        let findCnt = {}
+
+        const sortearEspecifico = (alias, i) => {
+            if (!findCnt[alias]) {
+                findCnt[alias] = {
+                    count: 0,
+                    json: null
+                }
+            }
+
+            let o = findCnt[alias]
+
+            o.count += i
+
+            if (o.json)
+                sortear(o.json[o.count - 1].id)
+
+            fetch(`${baseUrl}?option=${alias}`)
+                .then(req => req.json())
+                .then(res => {
+                    o.json = res
+                    sortear(res[o.count - 1].id)
+                })
+
+        }
+
+        let maiorQuantidadeConvidadosCnt = 0
+        const maiorQuantidadeConvidados = i => {
+            maiorQuantidadeConvidadosCnt += i
+            fetch(`${baseUrl}?option=++++++++++++++++++++++++++++++++++`)
+                .then(req => req.json())
+                .then(res => sortear(res[maiorQuantidadeConvidadosCnt - 1].id))
+        }
+
+        window.addEventListener('keypress', ev => {
+            console.log(ev.key)
+            switch (ev.key) {
+                case "Enter":
+                    sortear(randId()); break
+
+                case "q": sortearEspecifico('maiorGastoEticoins', +1); break
+                case "Q": sortearEspecifico('maiorGastoEticoins', -1); break
+
+                case "g": sortearEspecifico('carregarEticoinsGeral', +1); break
+                case "G": sortearEspecifico('carregarEticoinsGeral', -1); break
+
+                case "c": sortearEspecifico('maiorQtdConvidados', +1); break
+                case "C": sortearEspecifico('maiorQtdConvidados', -1); break
+            }
+        })
+
+        document.addEventListener("DOMContentLoaded", () => {
+            if (location.search)
+                init()
+            else
+                carregarEventos()
+        })
+
+        domLista.addEventListener('transitionend', ev => domSorteado.classList.add('show'))
+
+        domSelect.addEventListener('change', ev => {
+            let lnk = domSelect.value
+            let text = domSelect.querySelector(`option[value="${lnk}"]`).innerText
+            document.location.search = `${lnk}:${text}`
+        })
+    </script>
 </body>
 
 </html>

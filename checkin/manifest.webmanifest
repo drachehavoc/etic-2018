@@ -1,0 +1,10 @@
+{
+    "background_color": "black",
+    "description": "etic negada.",
+    "display": "fullscreen",
+    "icons": [
+    ],
+    "name": "eticoins",
+    "short_name": "etic",
+    "start_url": "/index.html?"
+  }
