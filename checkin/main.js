@@ -108,9 +108,13 @@ const showLocalStored = () => {
 }
 
 const scanner = async () => {
+    // if (mobile)
+    //     return
+
     let scanner = new Instascan.Scanner({
         video: domVideo,
-        refractoryPeriod: 3000
+        refractoryPeriod: 3000,
+        mirror: mobile 
     })
 
     try {
@@ -143,6 +147,8 @@ const loadEnrolledData = async evento => {
 
     let res = await req.json()
     let lis = document.querySelector('.inscritos')
+
+    lis.innerHTML = ''
 
     res.forEach(ins => {
         let className = []
@@ -192,7 +198,7 @@ const rollDice = async (id, name) => {
 
     const success = value => {
         setTimeout(() => {
-            stopAnimate( parseInt(value.eticoinsTotais) - parseInt(value.eticoinsGastos) )
+            stopAnimate(parseInt(value.eticoinsTotais) - parseInt(value.eticoinsGastos))
             let v = domEticoinsName.innerText = value.nome.split(' ')[0].toLowerCase()
             v = v.charAt(0).toUpperCase() + v.substr(1)
             domEticoinsName.innerText = v
@@ -253,10 +259,10 @@ const toggleConf = async () => {
     }
 }
 
-const saveTrigger = id => {
-    id = id.substr(0, 5)
+const saveTrigger = () => {
+    let id = clearInput()
 
-    if (id == "confi" || id == "conf")
+    if (id == "conf")
         return toggleConf()
 
     let target = document.querySelector(`[data-id="${parseInt(id)}"]`)
@@ -296,15 +302,26 @@ const tickTimeLeft = () => {
     domBubbleTimeLeft.innerText = updateTimeLeft
 }
 
+const clearInput = () => {
+    let value = domQrcodeInput.value
+    domQrcodeInput.value = ''
+    return value.substr(0, 5)
+}
+
 // -- Attach Events ---------------------------------------------------
 
 const attachEvents = () => {
+
+
+    domQrcodeInput.addEventListener('keydown', ev => {
+        if (ev.which !== 13) return
+        saveTrigger()
+    })
+
     domQrcodeInput.addEventListener('keyup', ev => {
         if (domQrcodeInput.value.length < 5) return
-        let value = ev.target.value
         ev.preventDefault()
-        domQrcodeInput.value = ''
-        saveTrigger(value)
+        saveTrigger()
     })
 
     domSelectEvents.addEventListener('change', ev => location = "?" + domSelectEvents.value)
@@ -312,6 +329,7 @@ const attachEvents = () => {
     domMsgs.addEventListener('transitionend', ev => domMsgs.classList.remove('show'))
     domMsgs.addEventListener('animationend', ev => domMsgs.classList.remove('show'))
     window.addEventListener('keydown', ev => domQrcodeInput.focus())
+    document.querySelector('main').addEventListener('click', ev => domQrcodeInput.focus())
 }
 
 // -- Default Events ----------------------------------------------------------
