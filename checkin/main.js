@@ -27,7 +27,7 @@ const n =
 
 // ----------------------------------------------------------------------------
 
-const mobile = /Mobi|Android|iPad|iPhone/i.test(navigator.userAgent)
+let mobile = /Mobi|Android|iPad|iPhone/i.test(navigator.userAgent)
 const domOptions = document.querySelector('#options')
 const domOptionClose = domOptions.querySelector('.close')
 const domOptionWaitList = document.querySelector('#lista-de-espera')
